@@ -19,7 +19,7 @@ this creates new polygons.
 
 #read a polygons file, create a new field same for all entries and dissolve everything to a big Multipolygon
 #save the dissolved Multipoligon to a new shp file
-p = gpd.read_file("diss_polygons_helsinki.shp")
+p = gpd.read_file("polygons_to_dissolve.shp")
 p['d_field'] = 1
 p_new = p.dissolve(by='d_field')
 p_new.to_file("diss_polygons.shp")
@@ -41,7 +41,7 @@ G = ox.graph_from_polygon(b, network_type='drive')
 ox.plot_graph(G)
 ox.io.save_graph_shapefile(G,"graph")
 
-nodes_shapefile = "C:/Users/chcha/Desktop/GEOMATICS/2nd Year/Thesis/p2_technical/code/git2/graph/nodes.shp"
+nodes_shapefile = "C:/Users/chcha/Desktop/GEOMATICS/2nd Year/Thesis/git2/graph/nodes.shp"
 nod = gpd.read_file(nodes_shapefile)
 
 deg_higher_3 = nod[(nod.street_cou > 2)]
@@ -51,7 +51,7 @@ deg3 = deg_higher_3.to_file("int_nodes.shp")
 #int_nodes is projected at WGS84 --> Change to correspondig crs
 df_multipolygon = gpd.read_file("diss_polygons.shp")
 df_nodes = gpd.read_file("int_nodes.shp")
-df_nodes = df_nodes.to_crs("EPSG:3879")
+df_nodes = df_nodes.to_crs("EPSG:4326")
 df_nodes.to_file("int_nodes_projected.shp")
 df_final_nodes = gpd.read_file("int_nodes_projected.shp")
 print(df_final_nodes.crs)
@@ -78,6 +78,11 @@ for b in buffers_small:
         bufs.append(b)
         only_nodes2.append(b[1])
 
+for i in bufs:
+    print(b[0])
+    print(b[1])
+
+print("check1")
 #based on if the small buffers are intersecting find the nodes that are close together (remove them from only_nodes2 list)
 only_buffers = []
 only_nodes = []
@@ -91,13 +96,17 @@ for bb in bufs:
 #make a union of buffers of the nodes that are close together, and find the centroid of this union buffer
 op = []
 for i in only_nodes:
+    print(i)
     test = []
     s = i.buffer(52)
+    print(s)
     for b in only_buffers:
         if s.intersects(b):
             test.append(b)
     cu = unary_union(test)
     op.append(cu)
+
+print("check2")
 
 opop = []
 for mult in op:
